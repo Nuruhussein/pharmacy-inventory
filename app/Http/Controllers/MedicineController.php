@@ -6,6 +6,8 @@ use App\Models\Medicine;
 use App\Models\Category;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class MedicineController extends Controller
 {
@@ -43,30 +45,33 @@ public function expiringSoon(Request $request)
         return view('medicines.expired', compact('expired_medicines'));
     }
 
-public function index(Request $request)
+    public function index(Request $request)
     {
         // Fetch all categories to populate the dropdown
         $categories = Category::all();
-
+    
         // Initialize query for medicines
         $medicinesQuery = Medicine::with(['category', 'supplier']);
-
+    
         // Check if there's a search query
-        if ($request->input('query')) {
+        if ($request->has('query')) {
             $query = $request->input('query');
             $medicinesQuery->where('name', 'LIKE', "%{$query}%");
         }
-
+    
         // Check if there's a category filter
         if ($request->input('category')) {
             $category = $request->input('category');
-            $medicinesQuery->where('category_id',$category);
+            $medicinesQuery->where('category_id', $category);
         }
-
+    
         // Get the filtered or unfiltered list of medicines
-        $medicines = $medicinesQuery->paginate(6);
-        return view('medicines.index', compact('medicines','categories'));
+        $medicines = $medicinesQuery->latest()->paginate(10);
+    
+        // Return the results to the view
+        return view('medicines.index', compact('medicines', 'categories'));
     }
+    
   public function create()
     {
         $categories = Category::all();
@@ -85,6 +90,8 @@ public function index(Request $request)
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
     ]);
 
+    try {
+
     $medicine = new Medicine($request->all());
 
     // Handle image upload
@@ -95,7 +102,10 @@ public function index(Request $request)
 
     $medicine->save();
 
-    return redirect()->route('dashboard')->with('success', 'Medicine added successfully.');
+    return redirect()->route('medicines.index')->with('success', 'Medicine added successfully!');
+} catch (\Exception $e) {
+    return redirect()->back()->with('error', 'Failed to add medicine. Please try again.');
+}
 }
     public function edit(Medicine $medicine)
     {
@@ -132,13 +142,13 @@ public function index(Request $request)
 
         $medicine->update($data);
 
-        return redirect()->route('dashboard')->with('success', 'Medicine updated successfully.');
+        return redirect()->route('medicines.index')->with('success', 'Medicine updated successfully.');
     }
 
   public function destroy(Medicine $medicine)
     {
         $medicine->delete();
-        return redirect()->route('dashboard')->with('success', 'Medicine deleted successfully.');
+        return redirect()->route('medicines.index')->with('success', 'Medicine deleted successfully.');
     }
      public function show(Medicine $medicine)  //object yetegegnechwa
     {

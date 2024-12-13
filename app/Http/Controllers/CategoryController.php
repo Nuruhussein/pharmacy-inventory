@@ -1,17 +1,28 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Mail\LowStockAlert;
+use Illuminate\Support\Facades\Mail;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-      // Retrieve all categories with the count of related medicines
-    $categories = Category::withCount('medicines')->get();
-    return view('categories.index', compact('categories'));
+     $categories = Category::withCount('medicines')->get();
+     $lowStockCategories = $categories->filter(function ($category) {
+        return $category->medicines_count < 3; // Check if medicines count is below 3
+    });
+
+    // Send email if there are categories with low stock
+    if ($lowStockCategories->isNotEmpty()) {
+        Mail::to('nuruhussen943@gmail.com')->send(new LowStockAlert($lowStockCategories));
+    }
+
+        return view('categories.index', compact('categories'));
     }
 
     public function create()
@@ -21,14 +32,33 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
         ]);
 
-        Category::create($request->all());
-        return redirect()->route('categories.index')->with('success', 'Category added successfully.');
+        // Handle the file upload
+        if ($request->hasFile('photo')) {
+            $imageName = time() . '_' . uniqid() . '.' . $request->photo->extension();
+            $request->photo->storeAs('public/categories', $imageName);
+            $validatedData['photo'] = 'categories/' . $imageName;
+        }
+
+        // Create the category
+        Category::create($validatedData);
+
+        return redirect()->route('categories.index')->with('success', 'Category created successfully.');
     }
 
+    public function show(Category $category)
+    {
+        return view('categories.show', compact('category'));
+    }
+   public function detail(Category $category)
+    {
+        return view('categories.detail', compact('category'));
+    }
     public function edit(Category $category)
     {
         return view('categories.edit', compact('category'));
@@ -36,31 +66,24 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
         ]);
 
-        $category->update($request->all());
+        // Handle the file upload
+        if ($request->hasFile('photo')) {
+            $imageName = time() . '_' . uniqid() . '.' . $request->photo->extension();
+            $request->photo->storeAs('public/categories', $imageName);
+            $validatedData['photo'] = 'categories/' . $imageName;
+        }
+
+        // Update the category
+        $category->update($validatedData);
+
         return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
     }
-
-//     public function show(Category $category)
-// {
-//     $categorie = $category::with('medicines')->get();
-//     return view('categories.show', compact('category'));
-// }
-
-
-
-///for testing
-
-public function show($id)
-{
-    $category = Category::with('medicines')->findOrFail($id);
-    return view('categories.show', compact('category'));
-}
-
-
 
     public function destroy(Category $category)
     {

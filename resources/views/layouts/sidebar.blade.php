@@ -1,3 +1,4 @@
+@notRole('customer')
 <div class="flex flex-col w-64  min-h-screen sticky bg-gray-900">
     <!-- Logo -->
     <div class="flex items-center justify-center h-20 bg-gray-800">
@@ -21,6 +22,7 @@
                     <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
                 </a>
             </li>
+          
             <li>
                 <a href="{{ route('suppliers.index') }}" 
                    class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('suppliers.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
@@ -36,7 +38,7 @@
               @if(Auth::user()->role == 'admin')      
             <li>
                     <a href="{{ route('doctors.index') }}" 
-                   class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('categories.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+                   class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('doctors.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
                     <i class="fas fa-user-md mr-2"></i>  manage Doctors
                 </a>
             </li>
@@ -44,7 +46,7 @@
              {{-- @if(Auth::user()->role == 'staff')   --}}
                 <li>
                     <a href="{{ route('staff.orders.index') }}" 
-                   class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('categories.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+                   class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('orders.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
                     <i class="fas fa-shopping-cart mr-2"></i>  manage orders
                 </a>
             </li>
@@ -157,12 +159,61 @@
                     </li>
                 </ul>
             </li>
+              @if(Auth::user()->role == 'admin')
+            <!-- Reports Dropdown -->
+<li class="relative">
+    <button class="flex items-center justify-between w-full py-3 px-6 text-lg text-gray-300 hover:text-white rounded-lg transition duration-150 ease-in-out focus:outline-none focus:bg-gray-900"
+            onclick="toggleDropdown('reports')">
+        <span class="flex items-center">
+         <i class="fas fa-file-alt mr-3"></i> Reports
+
+        </span>
+        <i id="reportsDropdownArrow" class="fas fa-chevron-right transition-transform duration-300 ease-in-out"></i>
+    </button>
+    <ul id="reportsDropdownMenu" class="hidden mt-2 space-y-2 rounded-lg shadow-md origin-top transform ml-5 transition-all duration-300 ease-in-out">
+        <li>
+            <a href="{{ route('reports.type', ['type' => 'daily']) }}" 
+               class="block py-3 px-6 text-lg text-gray-300 hover:text-white focus:bg-gray-700 hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+             Today Sales
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('reports.type', ['type' => 'weekly']) }}" 
+               class="block py-3 px-6 text-lg text-gray-300 hover:text-white focus:bg-gray-700 hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+               Lastweek Sales
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('reports.type', ['type' => 'monthly']) }}" 
+               class="block py-3 px-6 text-lg text-gray-300 hover:text-white focus:bg-gray-700 hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+                Lastmonth Sales
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('reports.type', ['type' => 'yearly']) }}" 
+               class="block py-3 px-6 text-lg text-gray-300 hover:text-white focus:bg-gray-700 hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+                Lastyear Sales
+            </a>
+        </li>
+    </ul>
+</li>
+
+<li>
+    <a href="{{ route('news.create') }}" 
+       class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('news.create') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
+        <i class="fas fa-newspaper mr-3"></i> Post News
+    </a>
+</li>
               <li>
                 <a href="{{ route('charts.index') }}" 
                    class="flex items-center py-3 px-6 text-lg {{ Request::routeIs('charts.index') ? 'text-white bg-gray-700' : 'text-gray-300' }} hover:text-white hover:bg-gray-700 rounded-lg transition duration-150 ease-in-out">
                       <i class="fas fa-chart-line mr-3"></i> </i> charts
                 </a>
             </li>
+@endif
+            
+         
+            
          
         </ul>
     </nav>
@@ -191,7 +242,7 @@
 <script>
     // Initialize dropdown states based on localStorage
     document.addEventListener('DOMContentLoaded', function() {
-        const dropdowns = ['medicine', 'sales','expiration', 'purchase'];
+        const dropdowns = ['medicine', 'sales','expiration', 'purchase','reports'];
         dropdowns.forEach(type => {
             const menu = document.getElementById(`${type}DropdownMenu`);
             const arrow = document.getElementById(`${type}DropdownArrow`);
@@ -222,3 +273,4 @@
         }
     }
 </script>
+@endnotRole

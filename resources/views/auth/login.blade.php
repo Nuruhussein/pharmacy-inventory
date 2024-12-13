@@ -1,8 +1,7 @@
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
-  {{-- @if(Auth::user()) --}}
-  
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
@@ -45,4 +44,14 @@
             </x-primary-button>
         </div>
     </form>
+
+    <!-- Registration Prompt -->
+    <div class="mt-4 text-center">
+        <p class="text-sm text-gray-600">
+            {{ __("Don't have an account?") }} 
+            <a href="{{ route('register') }}" class="text-indigo-600 hover:text-indigo-900">
+                {{ __('Register') }}
+            </a>
+        </p>
+    </div>
 </x-guest-layout>
